@@ -16,6 +16,20 @@ module Her
 
         json
       end
+
+      # This method is triggered when the response has been received. It modifies
+      # the value of `env[:body]`.
+      #
+      # @param [Hash] env The response environment
+      # @private
+      def on_complete(env)
+        env[:body] = case env[:status]
+        when 204
+          parse('{}')
+        else
+          parse(env[:body])
+        end
+      end
     end
   end
 end
