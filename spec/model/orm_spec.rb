@@ -330,7 +330,7 @@ describe Her::Model::ORM do
     end
   end
 
-  context "deleting resources" do
+  context "deleting resources - no errors" do
     before do
       Her::API.setup :url => "https://api.example.com" do |builder|
         builder.use Her::Middleware::FirstLevelParseJSON
@@ -355,6 +355,38 @@ describe Her::Model::ORM do
       @user.destroy
       @user.active.should be_false
       @user.should be_destroyed
+    end
+
+  end
+  context "deleting resources - error reporting" do
+
+    before do
+      Her::API.setup :url => "https://api.example.com" do |builder|
+        builder.use Her::Middleware::FirstLevelParseJSON
+        builder.use Faraday::Request::UrlEncoded
+        builder.adapter :test do |stub|
+          stub.get("/users/1") { |env| [200, {}, { :id => 1, :fullname => "Tobias Fünke", :active => true }.to_json] }
+          stub.delete("/users/1") { |env| [422, {}, { :id => 1, :fullname => "Lindsay Fünke", :active => false, :errors => ['houston, we have a problem'] }.to_json] }
+        end
+      end
+
+      spawn_model "Foo::User"
+    end
+    it "returns nil on error" do
+      @user = Foo::User.find(1)
+      @user.destroy.should be_nil
+    end
+    it "returns errors in the api as response_errors" do
+      @user = Foo::User.find(1)
+      @user.destroy
+      @user.response_errors.should_not be_blank
+      @user.response_errors.should eq(['houston, we have a problem'])
+    end
+    it "maps the response_errors to #errors in the model" do
+      @user = Foo::User.find(1)
+      @user.destroy
+      @user.errors.should_not be_blank
+      @user.errors.full_messages.should eq(['houston, we have a problem'])
     end
   end
 

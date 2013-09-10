@@ -62,7 +62,12 @@ module Her
         self
       end
 
+      ##
       # Destroy a resource
+      #
+      # @return mixed
+      #   nil on error
+      #   self on success
       #
       # @example
       #   @user = User.find(1)
@@ -75,10 +80,38 @@ module Her
             assign_attributes(self.class.parse(parsed_data[:data])) if parsed_data[:data].any?
             @metadata = parsed_data[:metadata]
             @response_errors = parsed_data[:errors]
-            @destroyed = true
+            if response.status >= 400 || @response_errors.any?
+              @destroyed = false
+              self.parse_response_errors
+            else
+              @destroyed = true
+              self.id = nil
+            end
           end
         end
-        self
+        if self.destroyed?
+          self
+        end
+      end
+
+      ##
+      # Add Hers response_errors to ActiveModel::Validation-Errors
+      #
+      # From the API, we could receive either an array with string(s) or with multiple array(s) (error-attributes with error-strings).
+      # * If the error is just a string, add it to :base.
+      # * If the error is actually an array with error-attribute(s) and error-string(s), add it to the correct attribute
+
+      def parse_response_errors
+        self.response_errors.each do |error|
+          if error.respond_to? :map
+            # in error[1] multiple errors for an attribute could be stored
+            # therefore, we should store each with the correct attribute
+            error[1].map{|error_str| self.errors.add(error[0].to_sym, error_str)}
+          else
+            # if error is just a string, add it to :base
+            self.errors.add(:base, error)
+          end
+        end
       end
 
       module ClassMethods
