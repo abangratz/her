@@ -80,12 +80,12 @@ module Her
             assign_attributes(self.class.parse(parsed_data[:data])) if parsed_data[:data].any?
             @metadata = parsed_data[:metadata]
             @response_errors = parsed_data[:errors]
-            if response.status >= 400 || @response_errors.any?
-              @destroyed = false
-              self.parse_response_errors
-            else
+            if response.success? && @response_errors.blank?
               @destroyed = true
               self.id = nil
+            else
+              @destroyed = false
+              self.parse_response_errors
             end
           end
         end
