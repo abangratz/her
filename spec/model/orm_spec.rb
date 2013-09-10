@@ -245,6 +245,35 @@ describe Her::Model::ORM do
     end
   end
 
+  context "saving resources - errors" do
+    before do
+      Her::API.setup :url => "https://api.example.com" do |builder|
+        builder.use Her::Middleware::FirstLevelParseJSON
+        builder.use Faraday::Request::UrlEncoded
+        builder.adapter :test do |stub|
+          stub.get("/users/1") { |env| [200, {}, { :id => 1, :fullname => "Tobias Fünke" }.to_json] }
+          stub.put("/users/1") { |env| [422, {}, { :id => 1, :fullname => "Lindsay Fünke", :errors => [['fullname', ['must be unique.']] ] }.to_json] }
+        end
+      end
+
+      spawn_model "Foo::User"
+    end
+
+    it 'returns false on errors' do
+      @user = Foo::User.find(1)
+      @user.fullname = "Lindsay Fünke"
+      @user.save.should be_false
+    end
+
+    it "maps the response_errors to #errors in the model" do
+      @user = Foo::User.find(1)
+      @user.fullname = "Lindsay Fünke"
+      @user.save
+      @user.errors.full_messages.should eq(['Fullname must be unique.'])
+    end
+
+  end
+
   context "creating resources" do
     before do
       Her::API.setup :url => "https://api.example.com" do |builder|

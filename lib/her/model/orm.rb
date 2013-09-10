@@ -37,6 +37,7 @@ module Her
         callback = new? ? :create : :update
         method = self.class.method_for(callback)
 
+        rv = false
         run_callbacks callback do
           run_callbacks :save do
             params = to_params
@@ -45,13 +46,16 @@ module Her
               @metadata = parsed_data[:metadata]
               @response_errors = parsed_data[:errors]
 
-              return false if !response.success? || @response_errors.any?
-              self.changed_attributes.clear if self.changed_attributes.present?
+              if response.success? && @response_errors.blank?
+                self.changed_attributes.clear if self.changed_attributes.present?
+                rv = self
+              else
+                self.parse_response_errors
+              end
             end
           end
         end
-
-        self
+        rv
       end
 
       # Similar to save(), except that ResourceInvalid is raised if the save fails
