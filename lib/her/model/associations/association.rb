@@ -38,7 +38,8 @@ module Her
 
           if @parent.attributes[@name].blank? || @params.any?
             path = build_association_path lambda { "#{@parent.request_path(@params)}#{@opts[:path]}" }
-            data = @klass.get_raw(path, @params)
+            parsed_data = @klass.get_raw(path, @params.merge(page: page, per_page: per_page))[:parsed_data]
+            objects = parsed_data[:data].map {@klass.new(@klass.parse
           else
             @parent.attributes[@name]
           end
