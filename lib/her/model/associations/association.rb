@@ -37,6 +37,7 @@ module Her
           return @opts[:default].try(:dup) if @parent.attributes.include?(@name) && @parent.attributes[@name].empty? && @params.empty?
 
           if @parent.attributes[@name].blank? || @params.any?
+            path = build_association_path lambda { "#{@parent.request_path(@params)}#{@opts[:path]}" }
             @klass.get(path, @params.merge(page: page, per_page: per_page, mode: :paginate))
           else
             @parent.attributes[@name]
