@@ -38,7 +38,7 @@ module Her
 
           if @parent.attributes[@name].blank? || @params.any?
             path = build_association_path lambda { "#{@parent.request_path(@params)}#{@opts[:path]}" }
-            parsed_data = @klass.get_raw(path, @params.merge(page: page, per_page: per_page))[:parsed_data]
+            parsed_data = @klass.get_raw(path, @params.merge(page: page, per_page: per_page, mode: :paginate))[:parsed_data]
             objects = parsed_data[:data][:objects].map { |item| @klass.new(@klass.parse(item)) }
             total = parsed_data[:data][:total]
             {total: total, objects: objects}
