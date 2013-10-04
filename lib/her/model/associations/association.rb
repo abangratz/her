@@ -34,7 +34,7 @@ module Her
         end
 
         def paginate(page=1, per_page=10, params={})
-          where(params.merge(page: page, per_page: per_page, mode: 'paginate'))
+          where(params.merge(page: page, per_page: per_page, mode: 'paginate')).fetch
         end
 
         # @private
