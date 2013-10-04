@@ -33,6 +33,10 @@ module Her
           end
         end
 
+        def paginate(page=1, per_page=10, params={})
+          where(params.merge(page: page, per_page: per_page, mode: 'paginate'))
+        end
+
         # @private
         def fetch(opts = {})
           return @opts[:default].try(:dup) if @parent.attributes.include?(@name) && @parent.attributes[@name].empty? && @params.empty?
