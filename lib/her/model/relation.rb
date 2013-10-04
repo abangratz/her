@@ -73,6 +73,16 @@ module Her
         end
       end
 
+      def paginate(page=1, per_page=10)
+        @_fetch ||= begin
+          path = @parent.build_request_path(@params)
+          method = @parent.method_for(:find)
+          @parent.request(@params.merge(:_method => method, :_path => path, method: paginate, page: page, per_page: per_page)) do |parsed_data, response|
+            @parent.new_collection(parsed_data)
+          end
+        end
+      end
+
       # Fetch specific resource(s) by their ID
       #
       # @example
