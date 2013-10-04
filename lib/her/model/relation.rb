@@ -78,11 +78,8 @@ module Her
           path = @parent.build_request_path(@params)
           method = @parent.method_for(:find)
           @parent.request(@params.merge(:_method => method, :_path => path, mode: :paginate, page: page, per_page: per_page)) do |parsed_data, response|
-            objects = parsed_data[:data][:objects]
-            metadata = parsed_data[:metadata]
-            errors = parsed_data[:errors]
-            total = parsed_data[:total]
-            @parent.new_collection(objects, metadata, errors, total)
+            parsed_data[:data][:objects] = parsed_data[:data][:objects]
+            @parent.new_collection(parsed_data)
           end
         end
       end
