@@ -71,7 +71,8 @@ module Her
                 if parsed_data[:data].is_a?(Array) || active_model_serializers_format?
                   new_collection(parsed_data)
                 elsif parsed_data[:data][:objects]
-                  new_collection(parsed_data[:data][:objects], parsed_data[:metadata], parsed_data[:errors], parsed_data[:total])
+                  parsed_data[:data] = parsed_data[:data][:objects]
+                  new_collection(parsed_data)
                 else
                   new(parse(parsed_data[:data]).merge :_metadata => parsed_data[:metadata], :_errors => parsed_data[:errors])
                 end

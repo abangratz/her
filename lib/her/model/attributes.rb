@@ -37,7 +37,7 @@ module Her
           resource.run_callbacks :find
           resource
         end
-        Her::Collection.new(collection_data, parsed_data[:metadata], parsed_data[:errors])
+        Her::Collection.new(collection_data, parsed_data[:metadata], parsed_data[:errors], parsed_data[:total])
       end
 
       # Use setter methods of model for each key / value pair in params
