@@ -78,7 +78,7 @@ module Her
           path = @parent.build_request_path(@params)
           method = @parent.method_for(:find)
           @parent.request(@params.merge(:_method => method, :_path => path, mode: :paginate, page: page, per_page: per_page)) do |parsed_data, response|
-            unless parsed_data[:data].is_a?(Hash) || parsed_data[:data][:total].empty?
+            unless parsed_data[:data].is_a?(Hash) && parsed_data[:data][:total]
               raise Her::Errors::ParseError.new("Response needs :objects (with collection data) and :total keys for pagination")
             else
               parsed_data[:data][:objects] = parsed_data[:data][:objects]
