@@ -78,8 +78,11 @@ module Her
           path = @parent.build_request_path(@params)
           method = @parent.method_for(:find)
           @parent.request(@params.merge(:_method => method, :_path => path, mode: :paginate, page: page, per_page: per_page)) do |parsed_data, response|
-            p parsed_data
-            parsed_data[:data][:objects] = parsed_data[:data][:objects]
+            if parsed_data[:data][:objects] && parsed_data[:data][:total]
+              parsed_data[:data][:objects] = parsed_data[:data][:objects]
+            else
+              raise Her::Errors::ParseError.new("Response needs :objects and :total keys for pagination")
+            end
             @parent.new_collection(parsed_data)
           end
         end
